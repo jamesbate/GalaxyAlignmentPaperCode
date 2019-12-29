@@ -4,10 +4,8 @@ import os
 import matplotlib as mpl
 mpl.use('Agg')
 import matplotlib.pyplot as plt
-from collections import Counter
-import time
-import pandas as pd
-import sys
+#preamble
+
 
 def merger_code_4(name_761_file,masscut_array,vdcut_array,redshifts_array,bin_name = '',level_lock=True):
 
@@ -25,16 +23,19 @@ def merger_code_4(name_761_file,masscut_array,vdcut_array,redshifts_array,bin_na
 
     Note: to not use cuts, use empty lists for cut arrays
     """
-    #change how images are saved for masscut
 
     Master_dir = os.getcwd()
 
     def hist_plot(galaxy,data,progen_data,bin_size,xlab):
+        """
+        Plots and saves histogram for given data
+        """
+
         #PLEASE NOT THAT THIS PLOTS THE FUNCTION FOR ALL ORIGINAL THE DATA, IT DOES NOT APPLY CUTS
+        #progen data included as we are likely to extend this function, although it is currently 
+        #not used
 
-        #normalise
-        #descriptive labels
-
+        #data bins
         min = np.amin(data)//bin_size*bin_size
         max = np.amax(data)//bin_size*bin_size
         if np.amax(data)%bin_size != 0:
@@ -43,7 +44,7 @@ def merger_code_4(name_761_file,masscut_array,vdcut_array,redshifts_array,bin_na
         if all(np.array(-1*data) == np.ones(data.size)):
             print 'Histogram Plot Error:\tInvalid data for '+xlab+str(i)
             return np.array([0])
-        #if all data -1, call error
+        #if all data -1, raise error
 
         n1, bins1, _ = plt.hist(data, bins=np.arange(min, max,bin_size))
 
@@ -58,7 +59,7 @@ def merger_code_4(name_761_file,masscut_array,vdcut_array,redshifts_array,bin_na
             plt.xlabel(r'$'+xlab+'$')
         plt.ylabel(r'Number of Galaxies')
         plt.title(r'Histrogram Plot of '+xlab)
-        #plt.grid(True)
+        #different labels for different data
 
         if xlab == 'b/a':
             plt.savefig('b_over_a'+'_hist_'+file_string+str(galaxy.snapshot)+'nocut.png')
@@ -69,16 +70,21 @@ def merger_code_4(name_761_file,masscut_array,vdcut_array,redshifts_array,bin_na
         else:
             plt.savefig(xlab+'_hist_'+file_string+str(galaxy.snapshot)+'nocut.png')
             plt.savefig(xlab+'_hist_'+file_string+str(galaxy.snapshot)+'nocut.eps',format='eps', dpi=1000)
-
+        #saving for all the different types of data
 
         plt.clf()
         return np.array(n1)
-    def ratio_plot(galaxy,n1,data,progen_data,bin_size,lab):
 
+    def ratio_plot(galaxy,n1,data,progen_data,bin_size,lab):
+        """
+        Plots and saves ratios of the data and progenitor data for 
+        each bin.
+        """
         min = np.amin(data)//bin_size*bin_size
         max = np.amax(data)//bin_size*bin_size
         if np.amax(data)%bin_size != 0:
             max += bin_size
+        #data bin sizes 
 
         if n1.size == 1 and n1 == [0]:
             print 'Ratio Plot Error:\tInvalid data for '+lab+str(i)
@@ -86,7 +92,7 @@ def merger_code_4(name_761_file,masscut_array,vdcut_array,redshifts_array,bin_na
         #ensures error if [0]
 
         n2, bins2,bin_num = plt.hist(progen_data, bins=np.arange(min, max,bin_size),color = 'r')
-
+        #histogram plot
 
 
         if lab == 'b/a':
@@ -100,10 +106,12 @@ def merger_code_4(name_761_file,masscut_array,vdcut_array,redshifts_array,bin_na
             plt.savefig(str(lab)+'_hist_progen_plot_'+file_string+str(galaxy.snapshot)+'.png')
             plt.savefig(str(lab)+'_hist_progen_plot_'+file_string+str(galaxy.snapshot)+'.eps',format='eps', dpi=1000)
 
+        #save data
+
         n2 = n2[0:n1.size]
         bins2 = bins2[0:n1.size+1]
-
         yerror = np.sqrt(n2*(1/n1)**2 + n1*(n2/n1**2)**2)
+        #errorbar values
 
         plt.clf()
 
@@ -133,10 +141,14 @@ def merger_code_4(name_761_file,masscut_array,vdcut_array,redshifts_array,bin_na
             plt.clf()
             return np.array([n2,bin_centers])
             #plot mass ratios
-    #add errors
-    def joint_ratio_plot(lab):
 
+    def joint_ratio_plot(lab):
+        """
+        Applies ratio plots to all the data saved by the above two functions simultaneously
+        for each redshift
+        """
         uncut = False
+        #apply no cuts to the data
 
         if uncut == True:
             uncut_string = 'uncut'
@@ -154,9 +166,10 @@ def merger_code_4(name_761_file,masscut_array,vdcut_array,redshifts_array,bin_na
             n = 3
         elif lab == 'b/a':
             n = 4
+        #associate data label to data index
 
         a = []
-        #colours = ['m','c','b','g','r']
+        #for legend
 
         fig,ax = plt.subplots()
         plt.subplots_adjust(left = 0.15,right = 0.85,top = 0.85, bottom = 0.15)
@@ -164,30 +177,23 @@ def merger_code_4(name_761_file,masscut_array,vdcut_array,redshifts_array,bin_na
             snapshot_loop = snapshot_num -1
         else:
             snapshot_loop = snapshot_num
+        #ratio plot needs to act slightly different if z = 0 is included
+
         for i in range(0,snapshot_loop):
             if galaxy_z[i].n2[n].size <= 1:
                 continue
             if lab == 'Velocity Dispersion':
                 if galaxy_z[i].bin_centers[n][-1] > 1.75:
-                    #temp = plt.plot(galaxy_z[i].bin_centers[n][:-1],galaxy_z[i].n2[:][n][:-1]/galaxy_z[i].n1[:][n][:-1],colour_dict[str(galaxy_z[i].snapshot)]+'--',label = 'z = '+ str(redshifts[i]))
-                    #plt.scatter(galaxy_z[i].bin_centers[n][:-1],galaxy_z[i].n2[:][n][:-1]/galaxy_z[i].n1[:][n][:-1],c = colour_dict[str(galaxy_z[i].snapshot)],s = 6)
                     temp = plt.plot(galaxy_z[i].bin_centers[n][:-1],galaxy_z[i].n2[:][n][:-1]/galaxy_z[i].n1[:][n][:-1],colour_dict[str(galaxy_z[i].snapshot)]+'--',label = 'z = '+ str(redshifts[i]))
                     plt.scatter(galaxy_z[i].bin_centers[n][:-1],galaxy_z[i].n2[:][n][:-1]/galaxy_z[i].n1[:][n][:-1],c = colour_dict[str(galaxy_z[i].snapshot)],s = 6)
-                    #plt.clf()
                 else:
-                    #temp = plt.plot(galaxy_z[i].bin_centers[n],galaxy_z[i].n2[:][n]/galaxy_z[i].n1[:][n],colour_dict[str(galaxy_z[i].snapshot)]+'--',label = 'z = '+ str(redshifts[i]))
-                    #plt.scatter(galaxy_z[i].bin_centers[n],galaxy_z[i].n2[:][n]/galaxy_z[i].n1[:][n],c = colour_dict[str(galaxy_z[i].snapshot)],s = 6)
                     temp = plt.plot(galaxy_z[i].bin_centers[n],galaxy_z[i].n2[:][n]/galaxy_z[i].n1[:][n],colour_dict[str(galaxy_z[i].snapshot)]+'--',label = 'z = '+ str(redshifts[i]))
                     plt.scatter(galaxy_z[i].bin_centers[n],galaxy_z[i].n2[:][n]/galaxy_z[i].n1[:][n],c = colour_dict[str(galaxy_z[i].snapshot)],s = 6)
-                    #plt.clf()
-                #TEMPORARY
+                               
             else:
-                #temp = plt.plot(galaxy_z[i].bin_centers[n],galaxy_z[i].n2[:][n]/galaxy_z[i].n1[:][n],colour_dict[str(galaxy_z[i].snapshot)]+'--',label = 'z = '+ str(redshifts[i]))
-                #plt.scatter(galaxy_z[i].bin_centers[n],galaxy_z[i].n2[:][n]/galaxy_z[i].n1[:][n],c = colour_dict[str(galaxy_z[i].snapshot)],s = 6)
                 temp = plt.plot(galaxy_z[i].bin_centers[n],galaxy_z[i].n2[:][n]/galaxy_z[i].n1[:][n],colour_dict[str(galaxy_z[i].snapshot)]+'--',label = 'z = '+ str(redshifts[i]))
                 plt.scatter(galaxy_z[i].bin_centers[n],galaxy_z[i].n2[:][n]/galaxy_z[i].n1[:][n],c = colour_dict[str(galaxy_z[i].snapshot)],s = 6)
-                #plt.clf()
-
+               
             a.append(temp[0])
 
         ax.tick_params(axis='both', labelsize = 12 , length = 5,width = 1)
@@ -200,8 +206,6 @@ def merger_code_4(name_761_file,masscut_array,vdcut_array,redshifts_array,bin_na
             plt.xlabel(r'$V_{\theta}/{\sigma}$',fontsize = 17)
 
         plt.ylabel(r'$\frac{\rm Number\ of\ main\ progenitors}{\rm Total\ number\ of\ galaxies}$',fontsize = 17)
-        #plt.title(r'Histrogram Ratio Plot of '+lab)
-        #plt.grid(True)
         plt.legend(handles = [i for i in a],frameon = False)
 
         if lab == 'c/a':
@@ -213,10 +217,12 @@ def merger_code_4(name_761_file,masscut_array,vdcut_array,redshifts_array,bin_na
         else:
             plt.savefig('ratio_plot_joint_'+file_string+uncut_string+str(lab)+'.png')
             plt.savefig('ratio_plot_joint_'+file_string+uncut_string+str(lab)+'.eps',format='eps', dpi=1000)
-        #can you save with space?
         plt.clf()
         return
+
     #These are the function which plot all the galaxy data
+#################################################################################################################
+
 
     if masscut_array == []:
         mcut = False
@@ -227,9 +233,11 @@ def merger_code_4(name_761_file,masscut_array,vdcut_array,redshifts_array,bin_na
         vdcut = False
     else:
         vdcut = True
+    #create mroe boolean flags to identify different cases
 
     masscolumns = 6
     vdcolumns = 4
+    #index where mass ad vd can be found
 
     level_lock_index = 20
     column_num = level_lock_index
@@ -258,7 +266,7 @@ def merger_code_4(name_761_file,masscut_array,vdcut_array,redshifts_array,bin_na
             self.snapshot = snapshot
             self.label = label
             return
-
+    #each galaxy file has a class associated with it
     colour_dict = {
     "761" : "C0",
     "733" : "C8",
@@ -270,22 +278,12 @@ def merger_code_4(name_761_file,masscut_array,vdcut_array,redshifts_array,bin_na
     "343" : "C7",
     "197" : "C1",
     "131" : "C9"
-    }
+    }#standardise colours 
 
-    #snapshots = [[15,131],[25,197],[47,343],[59,519],[84,733]]
-    #redshifts = [3,2,1,0.5,0.12]
-    #snapshots = [[15,131],[25,197],[47,343],[52,406],[59,519],[62,570],[68,638],[76,691],[84,733],[-1,761]]
-    #redshifts = [3,2,1,0.64,0.5,0.42,0.31,0.2,0.12,0.06]
-
-    #snapshots = [[15,131],[25,197],[47,343],[52,406],[62,570],[76,691],[-1,761]]
-    #redshifts = [3,2,1,0.64,0.42,0.2,0.06]
-
-    #redshifts = [10]
-    #snapshots = [[52,406]]
-    #specify number of snapshots required
 
     redshifts = redshifts_array[:,0].tolist()
     snapshots = redshifts_array[:,1:].astype(int).tolist()
+    #desired snapshots entered as argument 
 
     snapshot_num = len(snapshots)
 
@@ -316,8 +314,6 @@ def merger_code_4(name_761_file,masscut_array,vdcut_array,redshifts_array,bin_na
 
 
     galaxy_761.data_array = np.zeros([galaxy_761.list_length,column_num])
-    #galaxy_761.data_array = np.zeros([galaxy_761.list_length,17])
-    #changed from this bc we need to use all galaxies
     #read in 761 file and prime array
 
     for i,line in enumerate(galaxy_761.data_list,0):
@@ -332,7 +328,7 @@ def merger_code_4(name_761_file,masscut_array,vdcut_array,redshifts_array,bin_na
 
 
     for i in range(0,snapshot_num):
-
+        #Plots and save all galaxy data
 
 
         print 'Plotting Snapshot ' + str(galaxy_z[i].snapshot)
@@ -365,16 +361,6 @@ def merger_code_4(name_761_file,masscut_array,vdcut_array,redshifts_array,bin_na
             galaxy_z[i].data_array[j] = np.array([float(x) for x in line.split(" ")])
         #read galaxy list into array
 
-
-
-        #if galaxy_z[i].snapshot == 761:
-        #    galaxy_z[i].progen_masses = galaxy_761.data_array[:,6]
-        #    galaxy_z[i].progen_mag = galaxy_761.data_array[:,5]
-        #    galaxy_z[i].progen_disp = galaxy_761.data_array[:,4]
-        #    galaxy_z[i].progen_ax[:,0] = galaxy_761.data_array[:,7]
-        #    galaxy_z[i].progen_ax[:,1] = galaxy_761.data_array[:,8]
-        #    galaxy_z[i].progen_ax[:,2] = galaxy_761.data_array[:,9]
-        #else:
         for j,index in enumerate(galaxy_761.data_array[:,0],0):
             index = int(index)
             progen_index = int(id_cat[1,galaxy_z[i].label,index-1])
@@ -408,8 +394,8 @@ def merger_code_4(name_761_file,masscut_array,vdcut_array,redshifts_array,bin_na
             if level_lock == True:
                 if galaxy_761.data_array[j,level_lock_index - 1] != lvl:
                     continue
+            #applying all required cuts
             #its fine to not fill this plot array because zeros are shaved off afterwards
-            #THIS WAS INITIALLY J INSTEAD OF INDEX???
 
             galaxy_z[i].progen_masses[j] = galaxy_z[i].data_array[line.tolist(),6]
             galaxy_z[i].progen_mag[j] = galaxy_z[i].data_array[line.tolist(),5]
@@ -419,7 +405,6 @@ def merger_code_4(name_761_file,masscut_array,vdcut_array,redshifts_array,bin_na
 
             if galaxy_z[i].snapshot != 761:
                 file_write[i].write('{} {}\n'.format(str(index),str(progen_index+1)))
-
 
             #create progen file and fill plot arrays by going through galaxies
             #in galaxy file and checking for progen in progen file
@@ -449,9 +434,6 @@ def merger_code_4(name_761_file,masscut_array,vdcut_array,redshifts_array,bin_na
             galaxy_z[i].ax_plot_uncut[z] = [x for x in galaxy_z[i].progen_ax_uncut[:,z] if x != 0]
         #remove all zeros
 
-
-        #wrong
-
         galaxy_z[i].bin_size[0] = 0.5
         galaxy_z[i].n1.append(hist_plot(galaxy_z[i],galaxy_z[i].data_array[:,6],galaxy_z[i].masses_plot,galaxy_z[i].bin_size[0],'Mass'))
 
@@ -466,10 +448,10 @@ def merger_code_4(name_761_file,masscut_array,vdcut_array,redshifts_array,bin_na
         galaxy_z[i].n1.append(hist_plot(galaxy_z[i],galaxy_z[i].data_array[:,5],galaxy_z[i].mag_plot,galaxy_z[i].bin_size[1],'Magnitude'))
 
         temp = ratio_plot(galaxy_z[i],galaxy_z[i].n1[1],galaxy_z[i].data_array[:,5],galaxy_z[i].mag_plot,galaxy_z[i].bin_size[1],'Magnitude')
-        galaxy_z[i].n2.append(temp[0])##!!!!!
+        galaxy_z[i].n2.append(temp[0])
         galaxy_z[i].bin_centers.append(temp[1])
         temp2 = ratio_plot(galaxy_z[i],galaxy_z[i].n1[1],galaxy_z[i].data_array[:,5],galaxy_z[i].mag_plot_uncut,galaxy_z[i].bin_size[1],'Magnitudeuncut')
-        galaxy_z[i].n3.append(temp2[0])##!!!!!
+        galaxy_z[i].n3.append(temp2[0])
 
         galaxy_z[i].bin_size[2] = 0.25
         galaxy_z[i].n1.append(hist_plot(galaxy_z[i],galaxy_z[i].data_array[:,4],galaxy_z[i].disp_plot,galaxy_z[i].bin_size[2],'Velocity Dispersion'))
@@ -481,7 +463,6 @@ def merger_code_4(name_761_file,masscut_array,vdcut_array,redshifts_array,bin_na
         galaxy_z[i].n3.append(temp2[0])
 
         #axis ratio
-        #COPY NEW RATIO DATA IF I CAN BE BOTHERED
         galaxy_z[i].bin_size[3] = 0.1
         galaxy_z[i].n1.append(hist_plot(galaxy_z[i],galaxy_z[i].data_array[:,7]/galaxy_z[i].data_array[:,9],galaxy_z[i].ax_plot[0]/galaxy_z[i].ax_plot[2],galaxy_z[i].bin_size[3],'c/a'))
 
@@ -502,10 +483,7 @@ def merger_code_4(name_761_file,masscut_array,vdcut_array,redshifts_array,bin_na
     joint_ratio_plot('Mass')
     joint_ratio_plot('Magnitude')
     joint_ratio_plot('Velocity Dispersion')
-
-    #joint_ratio_plot('c/a')
-    #joint_ratio_plot('b/a')
-    #need to make plots look prettier
+    #final joint plots with all acquired data
 
     galaxy_761_file.close()
     for i in range(0,snapshot_num/2):
@@ -516,5 +494,6 @@ def merger_code_4(name_761_file,masscut_array,vdcut_array,redshifts_array,bin_na
     #close all relavent files
 
     os.chdir(Master_dir)
+    #move back to oringal directory
 
     return

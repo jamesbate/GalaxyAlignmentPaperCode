@@ -158,8 +158,7 @@ def z_avangle_plot(redshifts_array,smoothings_array,cut_name_array,index_plot_ar
 
 
 
-    #plt.xlabel('redshift',fontsize = 10)
-    #plt.ylabel('mean angle',fontsize = 10)
+
     plt.savefig(Master_dir + '/Tidal_Image_Plots/mean_angleplot_'+str(999)+'_'+file_string+'4x4.png', dpi=1000)
     plt.savefig(Master_dir + '/Tidal_Image_Plots/mean_angleplot_'+str(999)+'_'+file_string+'4x4.eps',format='eps', dpi=1000)
 
@@ -188,8 +187,7 @@ def z_avangle_plot(redshifts_array,smoothings_array,cut_name_array,index_plot_ar
                     tidal_objects[p][m] = tide(i)
                     tidal_objects[p][m].file_array = np.array(np.loadtxt(To_Plot_Base +'smooth' + str(j) + '_' + str(int(i)) + '.dat',delimiter = ' '))
 
-            #TEMPORARY
-            #smoothings_array_label = [0.4,0.8,1.6,3.2]
+
             for q,i in enumerate(index_plot_array,0):
                 for c,sm in enumerate(smoothings_array,0):
                     if len(cut_name_array) == 1:
@@ -209,16 +207,12 @@ def z_avangle_plot(redshifts_array,smoothings_array,cut_name_array,index_plot_ar
                     plt.plot(np.linspace(0,3,3),np.ones(3),'k--')
 
 
-
-        #plt.legend(handles = [k for k in b],frameon = False,loc = "center right",bbox_to_anchor=(1.4,0.5))
         plt.legend(handles = [k for k in b])
         plt.xlabel('z', fontsize = 15)
         plt.ylabel(r'$\langle \theta \rangle $ (radians)', fontsize = 15)
         ax.tick_params(labelsize=14)
-        #ax.set_ylim([0.85,1.15])
         ax.set_ylim([0.8,1.2])
-        #print('$\langle \theta^{\rm '+ str(labels[index_plot_array[0]]),'} \rangle $ (radians))
-        #plt.ylabel(r'$\langle \theta^{\rm '+str(labels[index_plot_array[0]][1:-1])+'} \rangle $ (radians)', fontsize = 17)
+
         plt.title(r''+title, fontsize = 17)
 
     plt.savefig(Master_dir + '/Tidal_Image_Plots/mean_angleplot_'+cutname+'_'+file_string+'joint.png',dpi=1000)

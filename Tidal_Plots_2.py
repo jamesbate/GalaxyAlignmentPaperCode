@@ -6,6 +6,7 @@ from scipy import stats
 import matplotlib.pyplot as plt
 from collections import Counter
 from matplotlib import rc
+#preamble
 
 def Tidal_Plots_2(snapshots_array,smoothness_array,cut,name_761_file,cutname,level_lock = True):
     """
@@ -37,23 +38,6 @@ def Tidal_Plots_2(snapshots_array,smoothness_array,cut,name_761_file,cutname,lev
     if level_lock == True:
         GalaxyBase += '_lvlone'
         ToPlotBase += '_lvlone'
-    #This might throw an error as I haven't had chance to test leveling out yet
-
-
-    #progen_cut = False
-    #make true if whole population desired - ? I think I got this the wrong way round
-
-
-    #weighting = False
-
-
-    #make true to weight by ellipticity
-    #mass_cut = True
-    #level_lock = True
-    #false only for full population
-
-    #MASSCUT IMPLIES PROGEN CUT, DO NOT MAKE THEM BOTH TRUE
-
 
     colour_dict = {
     "761" : "C0",
@@ -66,7 +50,7 @@ def Tidal_Plots_2(snapshots_array,smoothness_array,cut,name_761_file,cutname,lev
     "343" : "C7",
     "197" : "C1",
     "131" : "C9"
-    }
+    }#standardise colour scheme
 
 
     if not os.path.exists(Master_dir + '/Tidal_Image_Plots/Tidal_Images_new_'+cutname):
@@ -86,25 +70,27 @@ def Tidal_Plots_2(snapshots_array,smoothness_array,cut,name_761_file,cutname,lev
             return
 
     def weight_finder(c,b,a):
+        #apply ellipticity weighting to see how much it changes plots
         return 1 - c/a
 
     def bin_plot_angle_prob(angles,galaxy,snap,z,string):
+        """
+        Plots pdf distribution of galaxy angles with the tidal field
+        """
         if len(angles) == 0 or galaxy.array.size == 0:
             print('No tidal data for ' + str(galaxy.snapshot) +' binplot')
             return
-        #close figures
         plt.clf()
         galaxy_num = angles[0].size
         #assume each angle columns is the same size
         n_bins = 20
 
-
-
         fig_0 = plt.figure('Full')
 
-        colours = ['m','c','b','g','r'][0:smooth_num]
+        colours = ['m','c','b','g','r'][0:smooth_num]#if desired, use colours dict
 
         b = []
+        #legend
 
         for i,angle in enumerate(angles,0):
             plt.figure('temp')
@@ -116,12 +102,10 @@ def Tidal_Plots_2(snapshots_array,smoothness_array,cut,name_761_file,cutname,lev
             #Use histogram to get binned data
             yerror = np.ones(n_bins)*np.sqrt((probability*galaxy_num*bin_width))/(galaxy_num*bin_width)
 
-            #temp = plt.plot(bincenters,probability,'c--',label = 'Actual Probabilities Smoothness '+str(smoothness[i]) )
-            #b.append(temp[0])
-            #plt.errorbar(bincenters,probability,yerr = yerror,fmt='co',ms = 2, ecolor='c', capthick=1,capsize = 4,elinewidth = 1)
             temp = plt.plot(bincenters,probability,colours[i]+'--',label = 'Actual Probabilities Smoothness '+str(smoothness[i]) )
             b.append(temp[0])
             plt.errorbar(bincenters,probability,yerr = yerror,fmt = colours[i]+'o',ms = 2,ecolor = colours[i], capthick=1,capsize = 4,elinewidth = 1)
+        #plots
 
         x = np.linspace(0,np.pi/2,20)
         a, = plt.plot(x,np.sin(x),'k:',label = 'Expected if Randomly Distributed')
@@ -140,6 +124,10 @@ def Tidal_Plots_2(snapshots_array,smoothness_array,cut,name_761_file,cutname,lev
         return
 
     def scatter_plot_inertia_avangle(mass,angles,snap,z,string):
+        """
+        scatter plot of mass against average angle of the bin 
+        (Ended up using not using this plot)
+        """
         if len(angles) == 0 or len(mass)== 0:
             print('No tidal data for massplot')
             return
@@ -147,9 +135,10 @@ def Tidal_Plots_2(snapshots_array,smoothness_array,cut,name_761_file,cutname,lev
         plt.clf()
         n_bins = 12
         colours = ['C0','C1','C2','C3','C4','C5','C6','C7','C8','C9'][0:smooth_num]
+        #if we were to use plots, make sure to use the global colour dict 
 
         a = []
-
+        #legend
 
         fig = plt.figure(figsize = (8,6))
 
@@ -163,6 +152,7 @@ def Tidal_Plots_2(snapshots_array,smoothness_array,cut,name_761_file,cutname,lev
             plt.errorbar(bincenters,avangle,yerr = yerror,fmt=colours[i]+'o',ms = 4, ecolor=colours[i], capthick=1,capsize = 8,elinewidth = 1)
             temp =  plt.plot(bincenters,avangle,colours[i]+'--',label = 'Measured PDF Smoothness '+str(smoothness[i]))
             a.append(temp[0])
+        #plot with errors
 
         plt.grid()
         plt.xticks([9,10,11,12,13])
@@ -181,6 +171,9 @@ def Tidal_Plots_2(snapshots_array,smoothness_array,cut,name_761_file,cutname,lev
         return
 
     def bin_plot_angle_prob_diff(angles,galaxy,snap,z,string):
+        """
+        Pdf of galaxy, plotting difference from mean 
+        """
 
         if len(angles) == 0 or galaxy.array.size == 0:
             print('No tidal data for ' + str(galaxy.snapshot) +' binplotdiff')
@@ -276,10 +269,6 @@ def Tidal_Plots_2(snapshots_array,smoothness_array,cut,name_761_file,cutname,lev
 
         fig_0 = plt.figure('Full')
 
-        #colours = ['m','c','b','g','r','m','c','b','g','r']
-        #change colors
-
-
         b = []
 
 
@@ -352,14 +341,6 @@ def Tidal_Plots_2(snapshots_array,smoothness_array,cut,name_761_file,cutname,lev
         for n in range(0,len(angles)):
             galaxy_num.append(len(angles[0]))
 
-
-        #fig_0 = plt.figure('Full')
-
-        #colours = ['m','c','b','g','r','m','c','b','g','r']
-
-
-
-
         b = []
         fig_0,ax = plt.subplots(num = "Full")
 
@@ -377,10 +358,6 @@ def Tidal_Plots_2(snapshots_array,smoothness_array,cut,name_761_file,cutname,lev
             yerror = np.ones(n_bins)*np.sqrt((probability*galaxy_num[i]*bin_width))/(galaxy_num[i]*bin_width)
 
 
-            #temp = plt.plot(bincenters,probability,'c--',label = 'Actual Probabilities Smoothness '+str(smoothness[i]) )
-            #b.append(temp[0])
-            #plt.errorbar(bincenters,probability,yerr = yerror,fmt='co',ms = 2, ecolor='c', capthick=1,capsize = 4,elinewidth = 1)
-            #temp = plt.plot(bincenters,probability-1,colour_dict[str(snap[i])]+'--',label = 'z =  ' + str(z[i]))
             temp = plt.plot(bincenters,probability,colour_dict[str(snap[i])]+'--',label = 'z =  ' + str(z[i]))
             b.append(temp[0])
             plt.errorbar(bincenters,probability,yerr = yerror,fmt = colour_dict[str(snap[i])]+'o',ms = 2,ecolor = colour_dict[str(snap[i])], capthick=1,capsize = 4,elinewidth = 1)
@@ -399,8 +376,6 @@ def Tidal_Plots_2(snapshots_array,smoothness_array,cut,name_761_file,cutname,lev
 
         #plt.title('Full Population',fontsize = 17)
         plt.title('High Mass Elliptical Progenitors',fontsize = 17)
-        #plt.grid(True)
-
 
         # Shrink current axis by 20%
         box = ax.get_position()
@@ -409,12 +384,6 @@ def Tidal_Plots_2(snapshots_array,smoothness_array,cut,name_761_file,cutname,lev
         # Put a legend to the right of the current axis
 
         ax.legend(handles = [a]+[k for k in b],loc='center left', bbox_to_anchor=(1, 0.8))
-
-
-        #ax.legend(handles = [a]+[k for k in b]  )
-
-
-        #plt.
 
         plt.savefig(string+'_diffangleplot_joint.png')
         plt.savefig(string+'_diffangleplot_joint.eps',format='eps', dpi=1000)
@@ -428,7 +397,6 @@ def Tidal_Plots_2(snapshots_array,smoothness_array,cut,name_761_file,cutname,lev
             return
         plt.clf()
         n_bins = 12
-        #colours = ['m','c','b','g','r','m','c','b','g','r']
 
         a = []
 
@@ -464,34 +432,17 @@ def Tidal_Plots_2(snapshots_array,smoothness_array,cut,name_761_file,cutname,lev
         plt.close()
         return
 
-    #These plots are designed to plot angles of different snapshots simultaneously
+    #These joint plots are designed to plot angles of different snapshots simultaneously
 
-
-    #snapshots = [131,197,343,638,733]
-    #redshifts = [3,2,1,0.31,0.12]
-    #redshifts = [15,25,47,52,59,62,68,76,84]
-
-    #snapshots = [131,197,343,519,570,638,691,733]
-    #redshifts = [3,2,1,0.5,0.42,0.31,0.2,0.12]
-    #smoothness = [2]
-
-    #snapshots = [302]
-    #redshifts = [1.2]
-    #snapshots = [131,343,761]
-    #alter snapshots and smoothness as desired
 
     snapshots = snapshots_array[:,2].astype(int).tolist()
     redshifts = snapshots_array[:,0].astype(float).tolist()
 
-
-    #IS THIS WHERE IT'S GOING WRONG?
-
     smoothness = smoothness_array
-
-    #add later redhisfts
 
     snap_num = len(snapshots)
     smooth_num = len(smoothness)
+    #read in desired snapshots and smoothnesses
 
     galaxy_files = np.zeros(snap_num,dtype = object)
     galaxy_objects = np.zeros(snap_num,dtype = object)
@@ -520,12 +471,6 @@ def Tidal_Plots_2(snapshots_array,smoothness_array,cut,name_761_file,cutname,lev
         galaxy_objects[i].list = galaxy_files[i].readlines()
         #read in galaxy file
 
-        #if galaxy_objects[i].snapshot == 302:
-        #    column_number = 18
-        #else:
-        #    column_number = 17
-        #number of columns in galaxy data plus one for weights
-
         column_number = level_lock_index
 
         galaxy_objects[i].array = np.zeros([len(galaxy_objects[i].list),column_number])
@@ -533,21 +478,9 @@ def Tidal_Plots_2(snapshots_array,smoothness_array,cut,name_761_file,cutname,lev
 
         for j,line in enumerate(galaxy_objects[i].list,0):
             line_array = [float(x) for x in line.split(" ")]
-            #if weighting == True:
-            #    weight = weight_finder(line_array[7],line_array[8],line_array[9])
-            #    line_array += [weight]
-            #elif weighting == False:
-            #    line_array += [1]
-            #if line_array[6] > np.log10(3e9) or line_array[6] < np.log10(2e8):
-                #continue
-            #TEMPORARY MASS CUT
+
             galaxy_objects[i].array[j] = np.array(line_array)
         #read in galaxy files
-
-
-        #y = np.all(galaxy_objects[i].array != np.zeros(galaxy_objects[i].array.shape[1]),axis = 1)
-        #galaxy_objects[i].array = galaxy_objects[i].array[y]
-        #TEMPORARY MASS CUT
 
 
         for j in range(0,smooth_num):
@@ -567,10 +500,6 @@ def Tidal_Plots_2(snapshots_array,smoothness_array,cut,name_761_file,cutname,lev
             for k,line in enumerate(tidal_objects[i][j].list,0):
                 tidal_objects[i][j].array[k] = np.array([float(x) for x in line.split(" ")])
             #read in tidal file
-
-
-            #tidal_objects[i][j].array = tidal_objects[i][j].array[y]
-            #TEMPORARY MASS CUT
 
             args = np.argsort(tidal_objects[i][j].array[:,0],kind = 'quicksort')
             tidal_objects[i][j].array = tidal_objects[i][j].array[args]
@@ -623,7 +552,6 @@ def Tidal_Plots_2(snapshots_array,smoothness_array,cut,name_761_file,cutname,lev
         bin_plot_angle_prob_diff([x.theta_spin[1] for x in tidal_objects[i] if x.isempty == False],galaxy_objects[i],snapshots[i],redshifts[i],'theta_2_spin')#theta 2 minor
         bin_plot_angle_prob_diff([x.theta_spin[2] for x in tidal_objects[i] if x.isempty == False],galaxy_objects[i],snapshots[i],redshifts[i],'theta_3_spin')#theta 3 minor
         #plots all smoothnesses
-        #BE CAREFUL HERE, DUE TO PREVIOUS INCOMPETANCES, MINOR MEANS MAJOR AND MAJOR MEANS MINOR
 
     if snap_num > 1:
         for z in range(0,3):
@@ -631,9 +559,6 @@ def Tidal_Plots_2(snapshots_array,smoothness_array,cut,name_761_file,cutname,lev
 
             bin_plot_angle_prob_joint([x.theta_minor[z] for x in np.transpose([tidal_objects[y] for y in range(0,5)])[0]],[snapshots[k] for k in range(0,5)],[redshifts[k] for k in range(0,5)],[galaxy_objects[i] for i in range(0,5)],'theta_'+str(z+1)+'_major')
             bin_plot_angle_prob_diff_joint([x.theta_minor[z] for x in np.transpose([tidal_objects[y] for y in [0,1,2,5,8]])[0]],[snapshots[k] for k in [0,1,2,5,8]],[redshifts[k] for k in [0,1,2,5,8]],[galaxy_objects[i] for i in [0,1,2,5,8]],'theta_'+str(z+1)+'_major')
-            #bin_plot_angle_prob_diff_joint([x.theta_minor[z] for x in np.transpose([tidal_objects[y] for y in range(0,2)])[0]],[snapshots[k] for k in range(0,2)],[redshifts[k] for k in range(0,2)],[galaxy_objects[i] for i in range(0,2)],'theta_'+str(z+1)+'_major')
-            #bin_plot_angle_prob_diff_joint([x.theta_minor[z] for x in np.transpose([tidal_objects[y] for y in [0,1,2,5,7]])[0]],[snapshots[k] for k in [0,1,2,5,7]],[redshifts[k] for k in [0,1,2,5,7]],[galaxy_objects[i] for i in [0,1,2,5,7]],'theta_'+str(z+1)+'_major')
-            #scatter_plot_inertia_avangle_joint([x.array[:,6] for x in galaxy_objects],[x.theta_minor[z] for x in tidal_objects[[0,1,2,3,4,5],0]],'theta_'+str(z+1)+'_minor')
 
             bin_plot_angle_prob_joint([x.theta_spin[z] for x in np.transpose([tidal_objects[y] for y in range(0,5)])[0]],[snapshots[k] for k in range(0,5)],[redshifts[k] for k in range(0,5)],[galaxy_objects[i] for i in range(0,5)],'theta_'+str(z+1)+'_spin')
             bin_plot_angle_prob_diff_joint([x.theta_spin[z] for x in np.transpose([tidal_objects[y] for y in [0,1,2,5,7]])[0]],[snapshots[k] for k in [0,1,2,5,7]],[redshifts[k] for k in [0,1,2,5,7]],[galaxy_objects[i] for i in [0,1,2,5,7]],'theta_'+str(z+1)+'_spin')
@@ -643,8 +568,6 @@ def Tidal_Plots_2(snapshots_array,smoothness_array,cut,name_761_file,cutname,lev
 
 
     #plots desired snapshots
-
-    #I haven't closed the figures?
 
     os.chdir(Master_dir)
     return
