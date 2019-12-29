@@ -9,7 +9,7 @@ on a computer cluster and to manage up to hundreds of Gigabytes of data.
 Each important function has a docstring describing its role
 
 main_iter.py is the central script which controls which functions you want call. main_iter_callfunction.py
-is a small script which iteratively sends jobs to the cluster working on different classes of data in parallel. The main functions called by the script are the following:
+is a small script which iteratively sends jobs to the cluster working on different classes of data in parallel. The primary functions called by the script are the following:
 
 * merger_code_4 : extracts galaxy information 
 * TidalField2 : loops over extensive tidal field data to gain tidal information at galaxy locations
